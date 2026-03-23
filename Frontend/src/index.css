@@ -1,9 +1,81 @@
-* {
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0B1C3A;
+  --color-navy-mid: #112348;
+  --color-navy-light: #1A3260;
+  --color-gold: #E8A020;
+  --color-gold-light: #F5BC50;
+  --color-gold-dim: rgba(232, 160, 32, 0.18);
+  --color-white: #F0F4FF;
+  --color-muted: rgba(240, 244, 255, 0.45);
+  --color-green: #22C97A;
+  --color-red: #F04F5A;
+  --color-blue: #3B82F6;
+  --color-border: rgba(232, 160, 32, 0.2);
+  --color-glass: rgba(11, 28, 58, 0.82);
+  --color-glass-light: rgba(26, 50, 96, 0.6);
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --animate-slideDown: slideDown 0.2s ease;
+  --animate-slideUp: slideUp 0.25s ease;
+  --animate-pulse-gold: pulse-gold 1.8s infinite;
+
+  @keyframes slideDown {
+    from { transform: translateX(-50%) translateY(-8px); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(12px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes pulse-gold {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(232, 160, 32, 0.25); }
+    50%       { box-shadow: 0 0 0 7px rgba(232, 160, 32, 0.08); }
+  }
+}
+
+body {
+  overflow: hidden;
+  font-family: var(--font-sans);
+  background: var(--color-navy);
+  color: var(--color-white);
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  overflow: hidden;
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Leaflet Container Overrides */
+.leaflet-container {
+  background: transparent !important;
+  cursor: default;
+}
+.map-wrap.selecting .leaflet-container {
+  cursor: crosshair !important;
+}
+.leaflet-image-layer {
+  image-rendering: auto;
+}
+
+.leaflet-tooltip {
+  background: var(--color-navy-mid) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-white) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  padding: 4px 9px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+  white-space: nowrap !important;
+  letter-spacing: 0.2px !important;
+}
+
+.leaflet-tooltip::before {
+  border-top-color: var(--color-border) !important;
 }

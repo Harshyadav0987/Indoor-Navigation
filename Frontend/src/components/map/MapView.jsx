@@ -1,11 +1,27 @@
-import { useMemo } from "react"
-import { MapContainer, ImageOverlay, CircleMarker, Polyline, Tooltip } from "react-leaflet"
-import L from "leaflet"
+import { useMemo, useEffect } from "react"
+import { MapContainer, ImageOverlay, CircleMarker, Polyline, Tooltip, ZoomControl, useMap } from "react-leaflet"
+import "../../utils/leafletSetup"
+import "leaflet-rotate"
+import * as L from "leaflet"
+
 import { MAPS, SELECTABLE_TYPES } from "../../constants/maps"
 import { mapKeyFromNode, nodeColor } from "../../utils/mapHelpers"
 import { formatLabel } from "../../utils/formatLabel"
 import { FitToBounds } from "./FitToBounds"
 import { MapClickHandler } from "./MapClickHandler"
+
+/**
+ * Ensures map rotation and scroll settings apply properly
+ */
+function MapSettingsUpdater() {
+  const map = useMap()
+  useEffect(() => {
+    // Force touch and shift rotation to be enabled explicitly
+    if (map.touchRotate && !map.touchRotate.enabled()) map.touchRotate.enable()
+    if (map.shiftKeyRotate && !map.shiftKeyRotate.enabled()) map.shiftKeyRotate.enable()
+  }, [map])
+  return null
+}
 
 /**
  * MapView — the full-screen Leaflet map with path rendering,
@@ -30,19 +46,29 @@ export function MapView({
   )
 
   return (
-    <div className={`map-wrap ${selectMode ? "selecting" : ""}`}>
+    <div className={`fixed top-0 bottom-11 md:bottom-0 left-0 right-0 z-[1] bg-[#0B1C3A] overflow-hidden map-wrap ${selectMode ? "selecting" : ""}`}>
       <MapContainer
         key={`${activeMapKey}-${activeMap.w}-${activeMap.h}`}
         crs={L.CRS.Simple}
         bounds={bounds}
+        maxBounds={bounds}
+        maxBoundsViscosity={1.0}
         style={{ height: "100%", width: "100%" }}
-        maxZoom={3}
+        maxZoom={1.5}
         minZoom={-5}
-        zoomSnap={0.01}
+        zoomSnap={0.1}
         zoomDelta={0.5}
+        wheelPxPerZoomLevel={15}
         scrollWheelZoom={true}
         attributionControl={false}
+        zoomControl={false}
+        rotate={true}
+        touchRotate={true}
+        shiftKeyRotate={true}
+        rotateControl={{ closeOnZeroBearing: false, position: 'bottomleft' }}
       >
+        <MapSettingsUpdater />
+        <ZoomControl position="bottomright" />
         <FitToBounds bounds={bounds} />
         <ImageOverlay url={activeMap.url} bounds={bounds} />
 

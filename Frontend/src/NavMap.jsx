@@ -1,5 +1,4 @@
 import "leaflet/dist/leaflet.css"
-import "./NavMap.css"
 
 import { useNavigation } from "./hooks/useNavigation"
 import { useSearch }     from "./hooks/useSearch"
@@ -79,7 +78,7 @@ export default function NavMap() {
 
       {/* Select mode hint banner */}
       {nav.selectMode && (
-        <div className="select-hint">
+        <div className="fixed top-[110px] md:top-[85px] left-1/2 -translate-x-1/2 z-[9999] bg-gold text-navy px-3.5 md:px-[22px] py-[5px] md:py-[7px] rounded-[20px] text-[11px] md:text-[12.5px] font-bold shadow-[0_4px_20px_rgba(232,160,32,0.45)] whitespace-nowrap pointer-events-none animate-[slideDown_0.2s_ease]">
           {nav.step === "from"
             ? "📍 Click near your starting location"
             : "🏁 Click near your destination"}

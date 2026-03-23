@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { MapContainer, ImageOverlay, CircleMarker, Polyline, Tooltip, useMapEvents } from "react-leaflet"
 import L from "leaflet"
+import "leaflet/dist/leaflet.css"
 
 // ─── Config ──────────────────────────────────────────────────────
 const FLOOR_SIZES = {
@@ -26,6 +27,27 @@ const FLOOR_MAPS = {
 
 const NODE_TYPES = ["room", "corridor", "stairs", "washroom", "lab", "garden", "faculty"]
 
+// ─── Node type colors & icons ─────────────────────────────────────
+const typeColors = {
+  room:     "#2ecc71",
+  corridor: "#3498db",
+  stairs:   "#f39c12",
+  washroom: "#9b59b6",
+  lab:      "#1abc9c",
+  garden:   "#27ae60",
+  faculty:  "#e84393",
+}
+
+const typeIcons = {
+  room:     "🚪",
+  corridor: "🛤️",
+  stairs:   "🪜",
+  washroom: "🚻",
+  lab:      "🔬",
+  garden:   "🌿",
+  faculty:  "👨‍🏫",
+}
+
 // ─── Modal Component ──────────────────────────────────────────────
 function NodeModal({ latlng, floor, onConfirm, onCancel }) {
   const [label, setLabel] = useState("")
@@ -39,49 +61,49 @@ function NodeModal({ latlng, floor, onConfirm, onCancel }) {
   }
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.modal}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999] p-4">
+      <div className="bg-[#0D2045] border border-gold/25 rounded-2xl p-6 w-full max-w-[440px] shadow-[0_24px_60px_rgba(0,0,0,0.6)] font-sans text-white">
         {/* Header */}
-        <div style={styles.modalHeader}>
-          <span style={styles.modalTitle}>📍 Place New Node</span>
-          <button style={styles.closeBtn} onClick={onCancel}>✕</button>
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[15px] font-bold">📍 Place New Node</span>
+          <button className="bg-transparent border-none text-white/40 cursor-pointer text-base py-0.5 px-1.5 rounded" onClick={onCancel}>✕</button>
         </div>
 
         {/* Coords info */}
-        <div style={styles.coordsBadge}>
+        <div className="bg-gold/10 border border-gold/20 rounded-md px-2.5 py-1.5 text-[11px] font-mono text-gold mb-[18px]">
           x: {Math.round(latlng.lng)} · y: {Math.round(latlng.lat)} · Floor: {FLOORS.find(f => f.value === floor)?.label}
         </div>
 
         <form onSubmit={handleSubmit}>
           {/* Room ID */}
-          <div style={styles.field}>
-            <label style={styles.label}>Room ID / Label</label>
+          <div className="mb-4">
+            <label className="block text-[11px] font-semibold tracking-[0.8px] uppercase text-white/45 mb-1.5">Room ID / Label</label>
             <input
-              style={styles.input}
+              className="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-[13px] font-sans outline-none box-border"
               type="text"
               placeholder="e.g. J014, FA_computer_lab"
               value={label}
               onChange={e => { setLabel(e.target.value); setError("") }}
               autoFocus
             />
-            {error && <span style={styles.errorText}>{error}</span>}
+            {error && <span className="text-[11px] text-[#f97373] mt-1 block">{error}</span>}
           </div>
 
           {/* Node Type */}
-          <div style={styles.field}>
-            <label style={styles.label}>Node Type</label>
-            <div style={styles.typeGrid}>
+          <div className="mb-4">
+            <label className="block text-[11px] font-semibold tracking-[0.8px] uppercase text-white/45 mb-1.5">Node Type</label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
               {NODE_TYPES.map(t => (
                 <button
                   key={t}
                   type="button"
                   style={{
-                    ...styles.typeBtn,
                     background: type === t ? typeColors[t] : "rgba(255,255,255,0.05)",
                     borderColor: type === t ? typeColors[t] : "rgba(255,255,255,0.1)",
                     color: type === t ? "#fff" : "rgba(255,255,255,0.6)",
                     fontWeight: type === t ? 700 : 400,
                   }}
+                  className="px-1 py-[7px] border rounded-[7px] cursor-pointer text-[11px] transition-all text-center"
                   onClick={() => setType(t)}
                 >
                   {typeIcons[t]} {t}
@@ -91,11 +113,11 @@ function NodeModal({ latlng, floor, onConfirm, onCancel }) {
           </div>
 
           {/* Actions */}
-          <div style={styles.actions}>
-            <button type="button" style={styles.cancelBtn} onClick={onCancel}>
+          <div className="flex gap-2.5 mt-5 justify-end">
+            <button type="button" className="px-[18px] py-2 bg-white/5 border border-white/10 rounded-lg text-white/60 text-[13px] cursor-pointer" onClick={onCancel}>
               Cancel
             </button>
-            <button type="submit" style={styles.confirmBtn}>
+            <button type="submit" className="px-[20px] py-2 bg-[#00b894] border-none rounded-lg text-white text-[13px] font-bold cursor-pointer shadow-[0_4px_14px_rgba(0,184,148,0.4)]">
               ✓ Place Node
             </button>
           </div>
@@ -108,23 +130,23 @@ function NodeModal({ latlng, floor, onConfirm, onCancel }) {
 // ─── Delete Confirm Modal ─────────────────────────────────────────
 function DeleteModal({ node, onConfirm, onCancel }) {
   return (
-    <div style={styles.overlay}>
-      <div style={{ ...styles.modal, maxWidth: 360 }}>
-        <div style={styles.modalHeader}>
-          <span style={styles.modalTitle}>🗑️ Delete Node</span>
-          <button style={styles.closeBtn} onClick={onCancel}>✕</button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999] p-4">
+      <div className="bg-[#0D2045] border border-gold/25 rounded-2xl p-6 w-full max-w-[360px] shadow-[0_24px_60px_rgba(0,0,0,0.6)] font-sans text-white">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[15px] font-bold">🗑️ Delete Node</span>
+          <button className="bg-transparent border-none text-white/40 cursor-pointer text-base py-0.5 px-1.5 rounded" onClick={onCancel}>✕</button>
         </div>
-        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, margin: "16px 0" }}>
-          Are you sure you want to delete <b style={{ color: "#fff" }}>{node.label}</b>?
+        <p className="text-white/70 text-[14px] my-4">
+          Are you sure you want to delete <b className="text-white">{node.label}</b>?
           <br />
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 6, display: "block" }}>
+          <span className="text-[12px] text-white/40 mt-1.5 block">
             All edges connected to this node will also be removed.
           </span>
         </p>
-        <div style={styles.actions}>
-          <button style={styles.cancelBtn} onClick={onCancel}>Cancel</button>
+        <div className="flex gap-2.5 mt-5 justify-end">
+          <button className="px-[18px] py-2 bg-white/5 border border-white/10 rounded-lg text-white/60 text-[13px] cursor-pointer" onClick={onCancel}>Cancel</button>
           <button
-            style={{ ...styles.confirmBtn, background: "#e74c3c", boxShadow: "0 4px 14px rgba(231,76,60,0.4)" }}
+            className="px-[20px] py-2 bg-[#e74c3c] border-none rounded-lg text-white text-[13px] font-bold cursor-pointer shadow-[0_4px_14px_rgba(231,76,60,0.4)]"
             onClick={onConfirm}
           >
             🗑️ Delete
@@ -162,13 +184,11 @@ export default function AdminMap() {
     fetch("http://localhost:5000/api/edges").then(r => r.json()).then(setEdges)
   }, [])
 
-  // ── Map click → open modal instead of prompt ──────────────────
   function handleMapClick(latlng) {
     if (mode !== "node") return
-    setPendingClick(latlng)  // opens the modal
+    setPendingClick(latlng)
   }
 
-  // ── Modal confirmed → save node ───────────────────────────────
   async function handleModalConfirm({ label, type }) {
     const newNode = {
       id: label, label,
@@ -188,10 +208,9 @@ export default function AdminMap() {
     setNodes(prev => [...prev, saved])
   }
 
-  // ── Node click ─────────────────────────────────────────────────
   function handleNodeClick(node) {
     if (mode === "delete") {
-      setDeleteTarget(node)  // opens delete confirm modal
+      setDeleteTarget(node)
       return
     }
 
@@ -204,7 +223,6 @@ export default function AdminMap() {
     }
   }
 
-  // ── Save edge ──────────────────────────────────────────────────
   async function saveEdge(nodeA, nodeB) {
     const dx = nodeB.x - nodeA.x
     const dy = nodeB.y - nodeA.y
@@ -224,7 +242,6 @@ export default function AdminMap() {
     setSelectedNode(null)
   }
 
-  // ── Delete confirmed ───────────────────────────────────────────
   async function handleDeleteConfirm() {
     const node = deleteTarget
     setDeleteTarget(null)
@@ -247,146 +264,140 @@ export default function AdminMap() {
   }
 
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="font-sans flex flex-col h-screen overflow-hidden">
 
       {/* ── Topbar ── */}
-      <div style={styles.topbar}>
-        <div style={styles.logoArea}>
-          <img src="/mits_logo.png" alt="MITS" style={styles.logo} />
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 13 }}>MITS Admin Tool</div>
-            <div style={{ fontSize: 10, color: "#E8A020", letterSpacing: 1 }}>NODE EDITOR</div>
+      <div className="bg-navy/98 text-white flex items-center overflow-x-auto gap-2.5 md:flex-wrap p-2 md:py-0 md:px-4 md:h-[62px] border-b border-gold/20 shrink-0 custom-scrollbar z-10 w-full overflow-y-hidden">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <img src="/mits_logo.png" alt="MITS" className="w-8 h-8 rounded-full border-2 border-gold" />
+          <div className="hidden md:block">
+            <div className="font-bold text-[13px]">MITS Admin Tool</div>
+            <div className="text-[10px] text-gold tracking-widest">NODE EDITOR</div>
           </div>
         </div>
 
-        <div style={styles.divider} />
+        <div className="w-px h-7 bg-gold/20 shrink-0 hidden md:block" />
 
         {/* Floor tabs */}
-        <div style={styles.floorTabs}>
+        <div className="flex gap-1 p-[3px] bg-white/5 rounded-lg border border-gold/15 shrink-0">
           {FLOORS.map(f => (
             <button
               key={f.value}
               onClick={() => setFloor(f.value)}
-              style={{
-                ...styles.floorTab,
-                background: floor === f.value ? "#E8A020" : "transparent",
-                color: floor === f.value ? "#0B1C3A" : "rgba(255,255,255,0.6)",
-                fontWeight: floor === f.value ? 700 : 400,
-              }}
+              className={`px-3 py-1 border-none rounded-md cursor-pointer text-[12px] font-sans transition-all whitespace-nowrap ${
+                floor === f.value 
+                  ? "bg-gold text-navy font-bold shadow-sm" 
+                  : "bg-transparent text-white/60 font-normal hover:bg-white/10 hover:text-white"
+              }`}
             >
               {f.label}
             </button>
           ))}
         </div>
 
-        <div style={styles.divider} />
+        <div className="w-px h-7 bg-gold/20 shrink-0 hidden md:block" />
 
         {/* Mode buttons */}
-        <button
-          onClick={() => { setMode("node"); setSelectedNode(null) }}
-          style={{ ...styles.modeBtn, background: mode === "node" ? "#00b894" : "rgba(255,255,255,0.06)", boxShadow: mode === "node" ? "0 4px 14px rgba(0,184,148,0.4)" : "none" }}
-        >
-          🟢 Place Node
-        </button>
-
-        <button
-          onClick={() => { setMode("edge"); setSelectedNode(null) }}
-          style={{ ...styles.modeBtn, background: mode === "edge" ? "#e17055" : "rgba(255,255,255,0.06)", boxShadow: mode === "edge" ? "0 4px 14px rgba(225,112,85,0.4)" : "none" }}
-        >
-          🔗 Connect Edge
-        </button>
-
-        <button
-          onClick={() => { setMode("delete"); setSelectedNode(null) }}
-          style={{ ...styles.modeBtn, background: mode === "delete" ? "#e74c3c" : "rgba(255,255,255,0.06)", boxShadow: mode === "delete" ? "0 4px 14px rgba(231,76,60,0.4)" : "none" }}
-        >
-          🗑️ Delete Node
-        </button>
+        <div className="flex gap-2 shrink-0">
+          <button
+            onClick={() => { setMode("node"); setSelectedNode(null) }}
+            className={`px-[14px] py-1.5 border-none rounded-md cursor-pointer text-white text-[12px] font-semibold transition-all whitespace-nowrap ${
+              mode === "node" ? "bg-[#00b894] shadow-[0_4px_14px_rgba(0,184,148,0.4)]" : "bg-white/5"
+            }`}
+          >
+            🟢 Node
+          </button>
+          <button
+            onClick={() => { setMode("edge"); setSelectedNode(null) }}
+            className={`px-[14px] py-1.5 border-none rounded-md cursor-pointer text-white text-[12px] font-semibold transition-all whitespace-nowrap ${
+              mode === "edge" ? "bg-[#e17055] shadow-[0_4px_14px_rgba(225,112,85,0.4)]" : "bg-white/5"
+            }`}
+          >
+            🔗 Edge
+          </button>
+          <button
+            onClick={() => { setMode("delete"); setSelectedNode(null) }}
+            className={`px-[14px] py-1.5 border-none rounded-md cursor-pointer text-white text-[12px] font-semibold transition-all whitespace-nowrap ${
+              mode === "delete" ? "bg-[#e74c3c] shadow-[0_4px_14px_rgba(231,76,60,0.4)]" : "bg-white/5"
+            }`}
+          >
+            🗑️ Delete
+          </button>
+        </div>
 
         {/* Stats */}
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, marginLeft: 4 }}>
-          <b style={{ color: "#fff" }}>{currentNodes.length}</b> nodes ·{" "}
-          <b style={{ color: "#fff" }}>{edges.length}</b> edges
+        <span className="text-white/50 text-[12px] ml-1 shrink-0">
+          <b className="text-white">{currentNodes.length}</b> nodes ·{" "}
+          <b className="text-white">{edges.length}</b> edges
         </span>
 
         {selectedNode && (
-          <span style={{ color: "#fdcb6e", fontSize: 12 }}>
+          <span className="text-[#fdcb6e] text-[12px] shrink-0 font-bold hidden md:inline ml-auto">
             ● Selected: {selectedNode.label}
           </span>
         )}
 
-        {/* Mode chip */}
-        <span style={{
-          marginLeft: "auto",
-          padding: "4px 14px",
-          borderRadius: 20,
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: 1,
-          background: mode === "node" ? "#00b894" : mode === "edge" ? "#e17055" : "#e74c3c",
-          color: "#fff",
-        }}>
-          {mode.toUpperCase()}
-        </span>
       </div>
 
       {/* ── Stair banner ── */}
       {mode === "edge" && selectedNode?.type === "stairs" && (
-        <div style={styles.stairBanner}>
+        <div className="bg-[#f39c12] text-black px-5 py-[6px] text-[13px] font-semibold text-center z-10">
           ⚠️ Stair node selected from {FLOORS.find(f => f.value === selectedNode.floor)?.label} — switch floor and click matching stair node
         </div>
       )}
 
       {/* ── Map ── */}
-      <MapContainer
-        key={`${floor}-${mapSize.w}-${mapSize.h}`}
-        crs={L.CRS.Simple}
-        bounds={bounds}
-        style={{ height: "calc(100vh - 52px)", width: "100%", background: "#f0ece4" }}
-        maxZoom={3}
-        minZoom={-5}
-        zoomSnap={0.25}
-        attributionControl={false}
-      >
-        <ImageOverlay url={FLOOR_MAPS[floor]} bounds={bounds} />
-        <ClickHandler onMapClick={handleMapClick} />
+      <div className="flex-1 w-full bg-[#f0ece4] relative overflow-hidden z-[1]">
+        <MapContainer
+          key={`${floor}-${mapSize.w}-${mapSize.h}`}
+          crs={L.CRS.Simple}
+          bounds={bounds}
+          style={{ height: "100%", width: "100%", background: "transparent" }}
+          maxZoom={3}
+          minZoom={-5}
+          zoomSnap={0.25}
+          attributionControl={false}
+        >
+          <ImageOverlay url={FLOOR_MAPS[floor]} bounds={bounds} />
+          <ClickHandler onMapClick={handleMapClick} />
 
-        {/* Edges */}
-        {visibleEdges.map((edge, i) => {
-          const from = nodes.find(n => n.id === edge.from)
-          const to   = nodes.find(n => n.id === edge.to)
-          if (!from || !to) return null
-          const crossFloor = from.floor !== to.floor
-          return (
-            <Polyline
+          {/* Edges */}
+          {visibleEdges.map((edge, i) => {
+            const from = nodes.find(n => n.id === edge.from)
+            const to   = nodes.find(n => n.id === edge.to)
+            if (!from || !to) return null
+            const crossFloor = from.floor !== to.floor
+            return (
+              <Polyline
+                key={i}
+                positions={[[from.y, from.x], [to.y, to.x]]}
+                color={crossFloor ? "#ff6b35" : edge.isStair ? "#f39c12" : "#3498db"}
+                weight={crossFloor ? 3 : 2}
+                dashArray={crossFloor ? "8, 6" : null}
+              />
+            )
+          })}
+
+          {/* Nodes */}
+          {currentNodes.map((node, i) => (
+            <CircleMarker
               key={i}
-              positions={[[from.y, from.x], [to.y, to.x]]}
-              color={crossFloor ? "#ff6b35" : edge.isStair ? "#f39c12" : "#3498db"}
-              weight={crossFloor ? 3 : 2}
-              dashArray={crossFloor ? "8, 6" : null}
-            />
-          )
-        })}
-
-        {/* Nodes */}
-        {currentNodes.map((node, i) => (
-          <CircleMarker
-            key={i}
-            center={[node.y, node.x]}
-            radius={6}
-            pathOptions={{
-              color: getNodeColor(node),
-              fillColor: getNodeColor(node),
-              fillOpacity: 1,
-            }}
-            eventHandlers={{ click: () => handleNodeClick(node) }}
-          >
-            <Tooltip permanent direction="top" offset={[0, -8]}>
-              {node.label}
-            </Tooltip>
-          </CircleMarker>
-        ))}
-      </MapContainer>
+              center={[node.y, node.x]}
+              radius={6}
+              pathOptions={{
+                color: getNodeColor(node),
+                fillColor: getNodeColor(node),
+                fillOpacity: 1,
+              }}
+              eventHandlers={{ click: () => handleNodeClick(node) }}
+            >
+              <Tooltip permanent direction="top" offset={[0, -8]}>
+                {node.label}
+              </Tooltip>
+            </CircleMarker>
+          ))}
+        </MapContainer>
+      </div>
 
       {/* ── Node placement modal ── */}
       {pendingClick && (
@@ -408,220 +419,4 @@ export default function AdminMap() {
       )}
     </div>
   )
-}
-
-// ─── Node type colors & icons ─────────────────────────────────────
-const typeColors = {
-  room:     "#2ecc71",
-  corridor: "#3498db",
-  stairs:   "#f39c12",
-  washroom: "#9b59b6",
-  lab:      "#1abc9c",
-  garden:   "#27ae60",
-  faculty:  "#e84393",
-}
-
-const typeIcons = {
-  room:     "🚪",
-  corridor: "🛤️",
-  stairs:   "🪜",
-  washroom: "🚻",
-  lab:      "🔬",
-  garden:   "🌿",
-  faculty:  "👨‍🏫",
-}
-
-// ─── Styles ───────────────────────────────────────────────────────
-const styles = {
-  topbar: {
-    height: 52,
-    padding: "0 16px",
-    background: "rgba(11, 28, 58, 0.98)",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    borderBottom: "1px solid rgba(232,160,32,0.2)",
-    flexWrap: "wrap",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  logoArea: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    flexShrink: 0,
-  },
-  logo: {
-    width: 32,
-    height: 32,
-    borderRadius: "50%",
-    border: "2px solid #E8A020",
-  },
-  divider: {
-    width: 1,
-    height: 28,
-    background: "rgba(232,160,32,0.2)",
-    flexShrink: 0,
-  },
-  floorTabs: {
-    display: "flex",
-    gap: 3,
-    padding: 3,
-    background: "rgba(255,255,255,0.05)",
-    borderRadius: 8,
-    border: "1px solid rgba(232,160,32,0.15)",
-  },
-  floorTab: {
-    padding: "4px 12px",
-    border: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 12,
-    fontFamily: "'DM Sans', sans-serif",
-    transition: "all 0.15s",
-  },
-  modeBtn: {
-    padding: "6px 14px",
-    border: "none",
-    borderRadius: 7,
-    cursor: "pointer",
-    color: "white",
-    fontSize: 12,
-    fontWeight: 600,
-    fontFamily: "'DM Sans', sans-serif",
-    transition: "all 0.15s",
-  },
-  stairBanner: {
-    background: "#f39c12",
-    color: "#000",
-    padding: "6px 20px",
-    fontSize: 13,
-    fontWeight: 600,
-    textAlign: "center",
-  },
-
-  // Modal styles
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.6)",
-    backdropFilter: "blur(4px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 99999,
-  },
-  modal: {
-    background: "#0D2045",
-    border: "1px solid rgba(232,160,32,0.25)",
-    borderRadius: 16,
-    padding: 24,
-    width: "100%",
-    maxWidth: 440,
-    boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
-    fontFamily: "'DM Sans', sans-serif",
-    color: "#fff",
-  },
-  modalHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 15,
-    fontWeight: 700,
-  },
-  closeBtn: {
-    background: "transparent",
-    border: "none",
-    color: "rgba(255,255,255,0.4)",
-    cursor: "pointer",
-    fontSize: 16,
-    padding: "2px 6px",
-    borderRadius: 4,
-  },
-  coordsBadge: {
-    background: "rgba(232,160,32,0.1)",
-    border: "1px solid rgba(232,160,32,0.2)",
-    borderRadius: 6,
-    padding: "5px 10px",
-    fontSize: 11,
-    fontFamily: "monospace",
-    color: "#E8A020",
-    marginBottom: 18,
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    display: "block",
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: "0.8px",
-    textTransform: "uppercase",
-    color: "rgba(255,255,255,0.45)",
-    marginBottom: 7,
-  },
-  input: {
-    width: "100%",
-    padding: "9px 12px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: 8,
-    color: "#fff",
-    fontSize: 13,
-    fontFamily: "'DM Sans', sans-serif",
-    outline: "none",
-    boxSizing: "border-box",
-  },
-  errorText: {
-    fontSize: 11,
-    color: "#f97373",
-    marginTop: 4,
-    display: "block",
-  },
-  typeGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 6,
-  },
-  typeBtn: {
-    padding: "7px 4px",
-    border: "1px solid",
-    borderRadius: 7,
-    cursor: "pointer",
-    fontSize: 11,
-    fontFamily: "'DM Sans', sans-serif",
-    transition: "all 0.15s",
-    textAlign: "center",
-  },
-  actions: {
-    display: "flex",
-    gap: 10,
-    justifyContent: "flex-end",
-    marginTop: 20,
-  },
-  cancelBtn: {
-    padding: "8px 18px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 8,
-    color: "rgba(255,255,255,0.6)",
-    fontSize: 13,
-    fontFamily: "'DM Sans', sans-serif",
-    cursor: "pointer",
-  },
-  confirmBtn: {
-    padding: "8px 20px",
-    background: "#00b894",
-    border: "none",
-    borderRadius: 8,
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: 700,
-    fontFamily: "'DM Sans', sans-serif",
-    cursor: "pointer",
-    boxShadow: "0 4px 14px rgba(0,184,148,0.4)",
-  },
 }
